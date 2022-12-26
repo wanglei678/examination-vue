@@ -1,0 +1,31 @@
+.pagination.is-background {
+  padding: 0;
+  :deep(.number),
+  :deep(.btn-prev),
+  :deep(.btn-next),
+  :deep(.more) {
+    border: 1px solid #ddd;
+    margin: 0;
+    color: #337ab7;
+    background-color: #fff;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    margin-left: -1px;
+    font-size: 14px;
+    font-weight: normal;
+    border-radius: 0;
+  }
+  :deep(.number:not(.disabled).active) {
+    background-color: #337ab7;
+    border-color: #337ab7;
+  }
+  :deep(.btn-prev) {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+  :deep(.btn-next) {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+}
