@@ -37,14 +37,12 @@ axios.interceptors.request.use(
       if ((Number(expire) + (1000 * 60 * 60 * 4)) <= Number(timestamp)) {
         localStorage.removeItem('expire');
         localStorage.removeItem('token');
-        console.log('token超时');
         location.href = location.origin + '/#/login';
       } else {
         const token = localStorage.getItem('token') || '';
         if(token) {
           config.headers['Authorization'] = 'Bearer ' + token;
         } else {
-          console.log('没有token，请重新登陆');
           location.href = location.origin + '/#/login';
         }
       }
@@ -85,7 +83,6 @@ export function get(url: string, params?: { [key: string]: any }): Promise<any> 
         resolve(res.data);
       })
       .catch((err) => {
-        console.log(err);
         reject(err);
       });
   });

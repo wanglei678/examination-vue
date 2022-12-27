@@ -63,7 +63,6 @@
   const confirm = async () => {
     formEl.value.validate(async (valid: boolean, values: any) => {
       if (valid) {
-        console.log('values', values);
         try {
           dialogLoading.value = true;
           let params: any = {
@@ -71,7 +70,6 @@
             password: values.password
           }
           let res = await addUsers(params);
-          console.log('res:', res);
           showSuccess('添加用户成功');
           selectTableData();
           dialogLoading.value = false;

@@ -19,8 +19,6 @@
 
   const changeTheme = (type: keyof typeof ThemeEnum) => {
     theme!.value = type;
-    console.log('themeMapArray', themeMapArray); 
-    console.log('theme!.value', theme!.value); 
   };
 
   const dialogVisible = ref(false);

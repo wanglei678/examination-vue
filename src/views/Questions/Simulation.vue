@@ -4,6 +4,16 @@
   import Dialog from '@components/Dialog/index.vue';
   import Form from '@components/Form/index.vue';
   import { ThemeEnum, themeMap } from '@utils/enum';
+  import {
+    simulationList,
+    addSimulation,
+    editSimulationName,
+    querySimulationQuestions,
+    editSimulationsQuestion,
+    deleteSimulationsQuestion,
+    deleteSimulationsAndQuestion,
+    addSimulationsQuestions
+  } from '@api/simulation';
   import * as XLSX from 'xlsx';
   import moment from 'moment';
   import { export_json_to_excel } from '@/utils/export2Excel';
@@ -15,20 +25,28 @@
     ElPopconfirm,
     ElTable,
     ElUpload,
+    ElDropdown,
+    ElDropdownMenu,
+    ElDropdownItem,
+    ElIcon,
     ElTag
   } from 'element-plus';
   const theme = inject<Ref<keyof typeof ThemeEnum>>('theme');
   const editQuestionFormOptions = ref();
+  const tagClickData: any = ref();
+  const editOrDeletetrueTopicData: any = ref();
+  const edittrueTopicFlag = ref();
   const editRowData = ref();
   const questionList = ref();
+  const deletetrueTopicVisible = ref(false);
   const editQuestionVisible = ref(false);
   const loading = ref(false);
   const tableShow = ref(false);
-  const addChapterDiaVisval = ref(false);
+  const addtrueTopicDiaVisval = ref(false);
   const addQuestionDiaVisval = ref(false);
   const formEl = ref();
   const editQuestionFormEl = ref();
-  const chapterList: any = ref([]);
+  const trueTopicList: any = ref([]);
   const fileList = ref();
   const fileData = ref();
   const fileDataList: any = ref([]);
@@ -36,30 +54,30 @@
     return [
       {
         label: '题目名称',
-        prop: 'questionName',
+        prop: 'title',
         rules: [{ required: true, message: '请输入题目名称', trigger: 'blur' }],
-        defaultValue: values?.questionName,
+        defaultValue: values?.title,
         placeholder: '请输入题目名称'
       },
       {
         label: '题目类型',
-        prop: 'questionType',
+        prop: 'type',
         rules: [{ required: true, message: '请输入题目类型', trigger: 'change' }],
-        defaultValue: values?.questionType,
+        defaultValue: values?.type,
         placeholder: '请选择题目类型'
       },
       {
         label: '题目内容',
-        prop: 'questionContent',
+        prop: 'options',
         rules: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
-        defaultValue: values?.questionContent,
+        defaultValue: values?.options,
         placeholder: '请选择题目内容'
       },
       {
         label: '题目答案',
-        prop: 'questionAnswer',
+        prop: 'answer',
         rules: [{ required: true, message: '请输入题目答案', trigger: 'change' }],
-        defaultValue: values?.questionAnswer,
+        defaultValue: values?.answer,
         placeholder: '请选择题目答案'
       },
       {
@@ -71,10 +89,10 @@
       }
     ];
   };
-  const getFormOptions = [
+  let getFormOptions: any = [
     {
       label: '模拟名称',
-      prop: 'username',
+      prop: 'trueTopicName',
       rules: [{ required: true, message: '请输入模拟名称', trigger: 'blur' }],
       placeholder: '请输入模拟名称'
     }
@@ -88,45 +106,87 @@
   });
   watch(
     () => props.grade,
-    () => init()
+    () => {
+      tableShow.value = false;
+      init();
+    }
   );
   const init = () => {
-    // todo
-    console.log(`模拟tab重新加载等级为${props.grade}的数据`);
-    chapterList.value = [
-      {chapterName: '模拟一', type: 'success'},
-      {chapterName: '模拟二', type: 'success'},
-      {chapterName: '模拟三', type: 'success'},
-      {chapterName: '模拟四', type: 'success'},
-      {chapterName: '模拟五', type: 'success'},
-      {chapterName: '模拟六', type: 'success'},
-      {chapterName: '模拟七', type: 'success'},
-      {chapterName: '模拟八', type: 'success'},
-      {chapterName: '模拟九', type: 'success'},
-      {chapterName: '模拟十', type: 'success'},
-      {chapterName: '模拟十一', type: 'success'},
-      {chapterName: '模拟十二', type: 'success'},
-      {chapterName: '模拟十三', type: 'success'},
-      {chapterName: '模拟十四', type: 'success'},
-      {chapterName: '模拟十五', type: 'success'},
-      {chapterName: '模拟十六', type: 'success'},
-      {chapterName: '模拟十七', type: 'success'},
-      {chapterName: '模拟十八', type: 'success'},
-      {chapterName: '模拟十九', type: 'success'},
-      {chapterName: '模拟二十', type: 'success'},
-      {chapterName: '模拟二十一', type: 'success'}
-    ]
-    questionList.value = [
-      {questionName: '1+1=?', questionType: '选择题', questionContent: '1***2***3***4', questionAnswer: '2', analysis: '1+1=2'}
-    ];
+    loading.value = true;
+    let params: any = {}
+    if(props.grade == 'questionsEasy') {
+      params.grade = '1';
+    } else if (props.grade == 'questionsMiddle') {
+      params.grade = '2';
+    } else params.grade = '3';
+    simulationList(params).then(res => {
+      trueTopicList.value = res.data;
+      trueTopicList.value.map((item: any) => {
+        item.trueTopicName = item.name;
+        item.type = 'success';
+      })
+      loading.value = false;
+    }).catch(error => {
+      loading.value = false;
+      showError(error);
+    })
   }
   const sureAddQuestion = () => {
-    showSuccess('批量导入成功');
     addQuestionDiaVisval.value = false;
+    fileDataList.value.map((item: any) => {
+      item.mnid = tagClickData.value.id
+    })
+    addSimulationsQuestions(fileDataList.value).then(res => {
+      showSuccess('批量导入题目成功');
+      loading.value = false;
+      tagClick(tagClickData.value);
+    }).catch(error => {
+      loading.value = false;
+      showError(error);
+    })
   }
-  const sureAddChapter = () => {}
-  const handleRemove = () => {}
-  const handlePreview = () => {}
+  const sureAddtrueTopic = () => {
+    formEl.value.validate(async (valid: boolean, values: any) => {
+      if (valid) {
+        let params: any = {
+          name: values.trueTopicName
+        }
+        if(props.grade == 'questionsEasy') {
+          params.grade = '1';
+        } else if (props.grade == 'questionsMiddle') {
+          params.grade = '2';
+        } else params.grade = '3';
+        addtrueTopicDiaVisval.value = false;
+        loading.value = true;
+        tableShow.value = false;
+        if (!edittrueTopicFlag.value) {
+          // 新增模拟
+          addSimulation(params).then(() => {
+            showSuccess('新增模拟成功');
+            loading.value = false;
+            init();
+          }).catch(error => {
+            loading.value = false;
+            showError(error);
+          })
+        } else {
+          // 修改模拟名称
+          let editParams: any = {
+            name: values.trueTopicName,
+            id: editOrDeletetrueTopicData.value.id
+          }
+          editSimulationName(editParams).then(() => {
+            showSuccess('编辑模拟名称成功');
+            loading.value = false;
+            init();
+          }).catch((error: any) => {
+            loading.value = false;
+            showError(error);
+          })
+        }
+      }
+    })
+  }
   const changeFile = (file: any) => {
     fileData.value = file; // 保存当前选择文件
     readExcel(); // 调用读取数据的方法
@@ -153,14 +213,13 @@
         fileDataList.value = [];
         ws.map((item: any) => {
           fileDataList.value.push({
-            question: item['题目'],
+            title: item['题目'],
             option: item['选项'],
             answer: item['答案'] + '',
             type: item['类型'],
             analysis: item['解析']
           })
         })
-        console.log('fileDataList.value:', fileDataList.value);
       } catch (e) {
         return false;
       }
@@ -176,39 +235,131 @@
   const handleExceed = () => {
     showError(`当前限制选择 1 个文件！`);
   }
-  const deleteQuestion = (row: any) => {}
+  const deleteQuestion = (row: any) => {
+    loading.value = true;
+    let params: any = {
+      tmid: row.tmid
+    }
+    deleteSimulationsQuestion(params).then(res => {
+      showSuccess('删除题目成功');
+      loading.value = false;
+      tagClick(tagClickData.value);
+    }).catch(error => {
+      loading.value = false;
+      showError(error);
+    })
+  }
   const editQuesBtn = (row: any) => {
     editRowData.value = row;
     editQuestionFormOptions.value = getEditQuestionFormOptions(row);
     editQuestionVisible.value = true;
   }
-  const editQuestionConfirm = (row: any) => {}
+  const editQuestionConfirm = () => {
+    editQuestionFormEl.value.validate(async (valid: boolean, values: any) => {
+      if (valid) {
+        let params: any = {
+          tmid: editRowData.value.tmid,
+          analysis: values.analysis,
+          answer: values.answer,
+          options: values.options,
+          title: values.title,
+          type: values.type
+        }
+        editQuestionVisible.value = false;
+        loading.value = true;
+        editSimulationsQuestion(params).then(res => {
+          showSuccess('编辑题目成功');
+          loading.value = false;
+          tagClick(tagClickData.value);
+        }).catch(error => {
+          loading.value = false;
+          showError(error);
+        })
+      }
+    })
+  }
   const tagClick = (item: any) => {
+    tagClickData.value = item;
     loading.value = true;
-    chapterList.value.map((jtem: any) => {
-      if (jtem.chapterName == item.chapterName) {
+    trueTopicList.value.map((jtem: any) => {
+      if (jtem.trueTopicName == item.trueTopicName) {
         jtem.type = 'danger';
       } else {
         jtem.type = 'success';
       }
     })
-    setTimeout(()=>{
+    let params: any = {mnid: item.id}
+    querySimulationQuestions(params).then(res => {
+      questionList.value = res.data || [];
       tableShow.value = true;
       loading.value = false;
-    },1000)
+    }).catch(error => {
+      loading.value = false;
+      showError(error);
+    })
   }
   const uploadBtn = () => {
     fileDataList.value = [];
     fileList.value = [];
     addQuestionDiaVisval.value = true;
   }
+  const dropdownClick = (val: any) => {
+    const { type, command } = val;
+    editOrDeletetrueTopicData.value = command;
+    if (type === 'edit') {
+      edittrueTopicFlag.value = true;
+      getFormOptions[0].defaultValue = editOrDeletetrueTopicData.value.trueTopicName;
+      addtrueTopicDiaVisval.value = true;
+    } else if (type === 'delete') {
+      deletetrueTopicVisible.value = true;
+    }
+  }
+  const commandValue = (type: any, command: any) => {
+    return {
+      'type': type,
+      'command': command
+    }
+  }
+  const addtrueTopicClick = () => {
+    edittrueTopicFlag.value = false;
+    getFormOptions[0].defaultValue = '';
+    addtrueTopicDiaVisval.value = true;
+  }
+  const deletetrueTopicConfirm = () => {
+    loading.value = true;
+    tableShow.value = false;
+    deletetrueTopicVisible.value = false;
+    let params: any = {
+      id: editOrDeletetrueTopicData.value.id
+    };
+    deleteSimulationsAndQuestion(params).then(() => {
+      showSuccess('删除模拟成功');
+      loading.value = false;
+      init();
+    }).catch(error => {
+      loading.value = false;
+      showError(error);
+    })
+  }
 </script>
 <template>
   <div v-loading="loading">
-    <el-button @click="addChapterDiaVisval = true" class="mb-10" type="primary">新增模拟</el-button>
+    <el-button @click="addtrueTopicClick" class="mb-10" type="primary">新增模拟</el-button>
     <el-card class="box-card">
       <div class="tags-flex">
-        <el-tag @click="tagClick(item)" v-for="item in chapterList" :key="item" :type='item.type' class="tag-position">{{ item.chapterName }}</el-tag>
+        <div v-for="item in trueTopicList" :key="item" class="tag-position">
+          <el-dropdown @command="dropdownClick">
+            <span class="el-dropdown-link">
+              <el-tag @click="tagClick(item)" :type='item.type'>{{ item.trueTopicName }}</el-tag>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item :command="commandValue('edit', item)">修改模拟</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('delete', item)">删除模拟</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </div>
     </el-card>
     <el-card v-if="tableShow" class="box-card">
@@ -220,16 +371,28 @@
         :header-row-class-name="themeMap[theme || 'default'].className"
         border
         align="center">
-        <el-table-column prop="questionName" label="题目名称" align="center"></el-table-column>
-        <el-table-column prop="questionType" label="题目类型" align="center"></el-table-column>
-        <el-table-column prop="questionContent" label="题目内容" align="center"></el-table-column>
-        <el-table-column prop="questionAnswer" label="题目答案" align="center"></el-table-column>
-        <el-table-column prop="analysis" label="题目分析" align="center"></el-table-column>
+        <el-table-column prop="title" label="题目名称" align="center">
+          <template v-slot="scope">
+            <span v-html="scope.row.title"></span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="type" label="题目类型" align="center"></el-table-column>
+        <el-table-column prop="options" label="题目内容" align="center">
+          <template v-slot="scope">
+            <span v-html="scope.row.options"></span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="answer" label="题目答案" align="center"></el-table-column>
+        <el-table-column prop="analysis" label="题目分析" align="center">
+          <template v-slot="scope">
+            <span v-html="scope.row.analysis"></span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" align="center">
           <template v-slot="scope">
             <div>
               <el-button size="mini" @click="editQuesBtn(scope.row)" type="primary">编辑</el-button>
-              <el-popconfirm title="确认删除该用户?" @confirm="() => deleteQuestion(scope.row)">
+              <el-popconfirm title="确认删除该题目?" @confirm="() => deleteQuestion(scope.row)">
                 <template #reference>
                   <el-button size="mini" type="primary">删除</el-button>
                 </template>
@@ -240,9 +403,9 @@
       </el-table>
     </el-card>
     <Dialog
-      title="添加模拟"
-      v-model:dialogVisible="addChapterDiaVisval"
-      @confirm="sureAddChapter">
+      :title="edittrueTopicFlag ? '编辑模拟' : '新增模拟'"
+      v-model:dialogVisible="addtrueTopicDiaVisval"
+      @confirm="sureAddtrueTopic">
       <Form :options="getFormOptions" ref="formEl" />
     </Dialog>
     <el-dialog
@@ -254,14 +417,12 @@
         <el-upload
           class="upload-demo"
           action=""
-          :on-preview="handlePreview"
-          :on-remove="handleRemove"
           :limit="1"
           :file-list="fileList"
           :auto-upload="false"
           :on-exceed="handleExceed"
           :on-change="changeFile">
-          <el-button size="small" type="primary">点击上传</el-button>
+          <el-button size="small" type="primary">点击上传文件</el-button>
           <template #tip>
             <div class="el-upload__tip">只能上传 xlsx,xls 文件</div>
           </template>
@@ -275,7 +436,7 @@
           :header-row-class-name="themeMap[theme || 'default'].className"
           border
           align="center">
-          <el-table-column prop="question" label="题目名称" align="center"></el-table-column>
+          <el-table-column prop="title" label="题目名称" align="center"></el-table-column>
           <el-table-column prop="type" label="题目类型" align="center"></el-table-column>
           <el-table-column prop="option" label="题目内容" align="center"></el-table-column>
           <el-table-column prop="answer" label="题目答案" align="center"></el-table-column>
@@ -295,6 +456,12 @@
       @confirm="editQuestionConfirm">
       <Form :options="editQuestionFormOptions" ref="editQuestionFormEl" />
     </Dialog>
+    <Dialog
+      title="删除模拟"
+      v-model:dialogVisible="deletetrueTopicVisible"
+      @confirm="deletetrueTopicConfirm">
+      <span>是否确定删除模拟,这将会同时删除该模拟下的所有题目！</span>
+    </Dialog>
   </div>
 </template>
 <style>
@@ -305,15 +472,6 @@
     background-color: #205aa4;
     color: #fff;
   }
-  /* .el-table .bronze-green th {
-    background: linear-gradient(45deg, #1278f6, #00b4aa 50%, #1278f6) !important;
-  }
-  .el-table .reds th {
-    background: linear-gradient(45deg, #e9ef34, #06a41e 50%, #e9ef34) !important;
-  }
-  .el-table .blacks th {
-    background: linear-gradient(45deg, #545c64, #c62334 50%, #545c64) !important;
-  } */
 </style>
 <style lang="less" scoped>
   .box-card {
@@ -325,6 +483,7 @@
     margin-right: 10px;
     margin-top: 10px;
     cursor: pointer;
+    display: inline-block;
   }
   .mb-10 {
     margin-bottom: 10px;

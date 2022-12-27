@@ -51,7 +51,7 @@
           <el-input v-model="ruleForm.mobile" placeholder="请输入账号" />
         </el-form-item>
         <el-form-item prop="code" name="code">
-          <el-input v-model="ruleForm.code" placeholder="请输入密码" />
+          <el-input v-model="ruleForm.code" @keyup.enter.native="logins" placeholder="请输入密码" />
         </el-form-item>
       </el-form>
       <div class="login-btn">

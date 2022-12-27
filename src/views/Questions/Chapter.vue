@@ -103,7 +103,6 @@
     }
   );
   const init = () => {
-    console.log(`章节tab重新加载等级为${props.grade}的数据`);
     loading.value = true;
     let params: any = {}
     if(props.grade == 'questionsEasy') {
@@ -112,7 +111,6 @@
       params.grade = '2';
     } else params.grade = '3';
     querychaptersList(params).then(res => {
-      console.log('res:', res);
       chapterList.value = res.data;
       chapterList.value.map((item: any) => {
         item.chapterName = item.name;
@@ -130,8 +128,7 @@
       item.zjid = tagClickData.value.id
     })
     addQuestions(fileDataList.value).then(res => {
-      console.log('res:', res);
-      showSuccess('批量题目成功');
+      showSuccess('批量导入题目成功');
       loading.value = false;
       tagClick(tagClickData.value);
     }).catch(error => {
