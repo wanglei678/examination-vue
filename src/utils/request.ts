@@ -41,7 +41,7 @@ axios.interceptors.request.use(
       } else {
         const token = localStorage.getItem('token') || '';
         if(token) {
-          config.headers['Authorization'] = 'Bearer ' + token;
+          config.headers.common['Authorization'] = 'Bearer ' + token;
         } else {
           location.href = location.origin + '/#/login';
         }
@@ -57,8 +57,8 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   // 服务器状态码未200
   (response) => {
-    const data: UTILS.ResponseData = response.data;
-    if (data.statusCode !== '0' && data.statusCode !== undefined) {
+    const data: any = response.data;
+    if (data.status !== '0' && data.status !== 200) {
       // 有的接口没有statusCode
       throw data.message;
     }
