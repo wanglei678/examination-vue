@@ -6,6 +6,7 @@
   import { addUsers } from '@api/addUser';
   import Dialog from '@components/Dialog/index.vue';
   import getFormOptions from './getUserFormOptions';
+  import getManagerFormOptions from './getManagerFormOptions';
   import Form from '@components/Form/index.vue';
   import {
     ElInput,
@@ -23,9 +24,12 @@
   const pageSize = ref(20);
   const currentPage = ref(1);
   const dialogVisible = ref(false);
+  const addManagerdialogVisible = ref(false);
   const dialogLoading = ref(false);
   const userFormOptions: any = ref([]);
+  const managerFormOptions: any = ref([]);
   const formEl = ref();
+  const formElManager = ref();
   onMounted(() => {
     window.document.title = '用户管理';
     getTableData();
@@ -65,15 +69,43 @@
       if (valid) {
         try {
           dialogLoading.value = true;
+          let passStr: any = values.idNo.substring((values.idNo.length - 6), values.idNo.length);
           let params: any = {
             username: values.username,
-            password: values.password
+            phone: values.phone,
+            password: passStr,
+            idNo: values.idNo,
+            grade: values.grade,
+            role: 'student'
           }
-          let res = await addUsers(params);
-          showSuccess('添加用户成功');
+          dialogVisible.value = false;
+          await addUsers(params);
+          showSuccess('添加成功');
           selectTableData();
           dialogLoading.value = false;
-          dialogVisible.value = false;
+        } catch (e) {
+          dialogLoading.value = false;
+          showError(e);
+        }
+      }
+    })
+  };
+  const confirmManager = async () => {
+    formElManager.value.validate(async (valid: boolean, values: any) => {
+      if (valid) {
+        try {
+          dialogLoading.value = true;
+          let params: any = {
+            username: values.username,
+            phone: values.phone,
+            password: values.password,
+            role: 'manager'
+          }
+          addManagerdialogVisible.value = false;
+          await addUsers(params);
+          showSuccess('添加成功');
+          selectTableData();
+          dialogLoading.value = false;
         } catch (e) {
           dialogLoading.value = false;
           showError(e);
@@ -88,6 +120,10 @@
   const add = () => {
     userFormOptions.value = getFormOptions();
     dialogVisible.value = true;
+  };
+  const addManager = () => {
+    managerFormOptions.value = getManagerFormOptions();
+    addManagerdialogVisible.value = true;
   };
   const deleteUserClick = (row: any) => {
     let params: any = {
@@ -117,14 +153,30 @@
           <el-button @click="selectTableData()" type="primary">查询</el-button>
         </div>
         <div>
-          <el-button @click="add()" type="primary">新增</el-button>
+          <el-button @click="add()" type="primary">新增用户</el-button>
+          <el-button @click="addManager()" type="primary">新增管理员</el-button>
         </div>
       </div>
     </el-row>
     <el-table :data="userList" stripe border align="center">
-      <el-table-column prop="id" label="用户id" align="center"></el-table-column>
+      <el-table-column prop="id" label="用户id" align="center" width="80"></el-table-column>
       <el-table-column prop="username" label="用户名" align="center"></el-table-column>
       <el-table-column prop="create_time" label="创建时间" align="center"></el-table-column>
+      <el-table-column prop="phone" label="手机号" align="center"></el-table-column>
+      <el-table-column prop="role" label="角色" align="center"></el-table-column>
+      <el-table-column prop="idNo" label="身份证" align="center">
+        <template v-slot="scope">
+          <span>{{ scope.row.idNo == 'null' ? '--' : scope.row.idNo }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="报考等级" align="center">
+        <template v-slot="scope">
+          <span v-if="scope.row.grade == 1">初级监控</span>
+          <span v-else-if="scope.row.grade == 2">中级监控</span>
+          <span v-else-if="scope.row.grade == 3">中级维保</span>
+          <span v-else>--</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center">
         <template v-slot="scope">
           <div>
@@ -153,6 +205,13 @@
       :loading="dialogLoading"
       @confirm="confirm">
       <Form :options="userFormOptions" ref="formEl" />
+    </Dialog>
+    <Dialog
+      title="新增管理员"
+      v-model:dialogVisible="addManagerdialogVisible"
+      :loading="dialogLoading"
+      @confirm="confirmManager">
+      <Form :options="managerFormOptions" ref="formElManager" />
     </Dialog>
   </div>
 </template>
