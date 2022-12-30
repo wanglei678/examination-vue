@@ -4,6 +4,7 @@
   import { queryUserLists } from '@api/userList';
   import { deleteUser } from '@api/deleteUser';
   import { addUsers } from '@api/addUser';
+  import { changePwd } from '@api/changePwd';
   import Dialog from '@components/Dialog/index.vue';
   import getFormOptions from './getUserFormOptions';
   import getManagerFormOptions from './getManagerFormOptions';
@@ -20,15 +21,19 @@
   const loading = ref(false);
   const userList: any = ref([]);
   const userName = ref();
+  const editPwdRowData = ref();
   const total = ref(0);
   const pageSize = ref(20);
   const currentPage = ref(1);
+  const editPwdDialogVisible = ref(false);
   const dialogVisible = ref(false);
   const addManagerdialogVisible = ref(false);
   const dialogLoading = ref(false);
   const userFormOptions: any = ref([]);
   const managerFormOptions: any = ref([]);
+  const editPwdFormOptions: any = ref([]);
   const formEl = ref();
+  const editPwdFormEl = ref();
   const formElManager = ref();
   onMounted(() => {
     window.document.title = '用户管理';
@@ -138,6 +143,39 @@
       showError(error);
     })
   };
+  const editBtnClick = (row: any) => {
+    editPwdRowData.value = row;
+    editPwdFormOptions.value = [
+      {
+        label: '新密码',
+        prop: 'password',
+        rules: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
+        placeholder: '请输入新密码'
+      },
+    ];
+    editPwdDialogVisible.value = true;
+  }
+  const confirmEditPwd = () => {
+    editPwdFormEl.value.validate(async (valid: boolean, values: any) => {
+      if (valid) {
+        try {
+          dialogLoading.value = true;
+          let params: any = {
+            password: values.password,
+            id: editPwdRowData.value.id
+          }
+          editPwdDialogVisible.value = false;
+          await changePwd(params);
+          showSuccess('修改密码成功');
+          dialogLoading.value = false;
+        } catch (e) {
+          editPwdDialogVisible.value = false;
+          dialogLoading.value = false;
+          showError(e);
+        }
+      }
+    })
+  }
 </script>
 <template>
   <div v-loading="loading">
@@ -185,6 +223,7 @@
                 <el-button size="mini" type="primary">删除</el-button>
               </template>
             </el-popconfirm>
+            <el-button size="mini" @click="editBtnClick(scope.row)" type="primary">修改密码</el-button>
           </div>
         </template>
       </el-table-column>
@@ -212,6 +251,13 @@
       :loading="dialogLoading"
       @confirm="confirmManager">
       <Form :options="managerFormOptions" ref="formElManager" />
+    </Dialog>
+    <Dialog
+      title="修改密码"
+      v-model:dialogVisible="editPwdDialogVisible"
+      :loading="dialogLoading"
+      @confirm="confirmEditPwd">
+      <Form :options="editPwdFormOptions" ref="editPwdFormEl" />
     </Dialog>
   </div>
 </template>
