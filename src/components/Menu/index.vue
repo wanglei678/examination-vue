@@ -23,9 +23,6 @@
 
 <template>
   <nav class="nav">
-    <!-- <div class="nav-top">
-      <img src="@assets/close.png" class="close" />
-    </div> -->
     <el-scrollbar class="scrollbar">
       <el-menu
         :uniqueOpened="true"

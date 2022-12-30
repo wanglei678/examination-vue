@@ -25,6 +25,21 @@ const homeRouter: Array<RouteRecordRaw> = [
     path: '/questionsHard',
     name: 'questionsHard',
     component: () => import('@views/Questions/index.vue')
+  },
+  {
+    path: '/easyOperate',
+    name: 'easyOperate',
+    component: () => import('@views/Operare/EasyOperate/index.vue')
+  },
+  {
+    path: '/middleMonitorOperate',
+    name: 'middleMonitorOperate',
+    component: () => import('@views/Operare/MiddleMonitorOperate/index.vue')
+  },
+  {
+    path: '/middleMaintenanceOperate',
+    name: 'middleMaintenanceOperate',
+    component: () => import('@views/Operare/MiddleMaintenanceOperate/index.vue')
   }
 ];
 
