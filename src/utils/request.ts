@@ -55,11 +55,15 @@ axios.interceptors.request.use(
 );
 
 axios.interceptors.response.use(
-  // 服务器状态码未200
+  // 服务器状态码为200
   (response) => {
     const data: any = response.data;
     if (data.status !== '0' && data.status !== 200) {
-      // 有的接口没有statusCode
+      if (data.status == '401') {
+        localStorage.removeItem('expire');
+        localStorage.removeItem('token');
+        location.href = location.origin + '/#/login';
+      }
       throw data.message;
     }
     return response;
