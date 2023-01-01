@@ -14,6 +14,7 @@
     code: ''
   });
   const ruleForms = ref();
+  const loading = ref(false);
   const rules = {
     mobile: [{ required: true, message: '请输入账号' }],
     code: [{ required: true, message: '请输入密码' }]
@@ -21,6 +22,7 @@
   const logins = () => {
     ruleForms.value.validate((valid: boolean) => {
       if (valid) {
+        loading.value = true;
         let params: any = {
           username: ruleForm.value.mobile,
           password: ruleForm.value.code
@@ -28,10 +30,12 @@
         login(params).then(res => {
           if (res.message == '登录成功！'){
             showSuccess('登录成功！');
+            loading.value = false;
             localStorage.setItem('token', res.token);
             localStorage.setItem('expire', res.expiresIn);
             router.push('/user');
           } else {
+            loading.value = false;
             showError('登陆失败，请检查账号或密码后重试');
           }
         }).catch(error => {
@@ -43,7 +47,7 @@
 </script>
 
 <template>
-  <div class="login">
+  <div class="login" v-loading="loading">
     <div class="login-container">
       <span class="login-logo-title">后台管理系统</span>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForms">
