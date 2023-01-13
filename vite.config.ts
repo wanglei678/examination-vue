@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     open: true,
     proxy: {
       '/ooo': {
-        target: 'http://127.0.0.1:8080', // node服务端口
+        target: 'https://127.0.0.1:443', // node服务端口
         secure: false,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ooo/, '')

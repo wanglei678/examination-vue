@@ -39,6 +39,7 @@
             showError('登陆失败，请检查账号或密码后重试');
           }
         }).catch(error => {
+          loading.value = false;
           showError(error)
         })
       }
