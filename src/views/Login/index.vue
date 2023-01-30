@@ -19,6 +19,9 @@
     mobile: [{ required: true, message: '请输入账号' }],
     code: [{ required: true, message: '请输入密码' }]
   };
+  const beianClick = () => {
+    window.open('https://beian.miit.gov.cn/','_blank');
+  }
   const logins = () => {
     ruleForms.value.validate((valid: boolean) => {
       if (valid) {
@@ -62,6 +65,10 @@
       <div class="login-btn">
         <el-button style="width: 100%;" type="primary" @click="logins"> 登录 </el-button>
       </div>
+    </div>
+    <div class="footer">
+      <span>备案号：</span>
+      <span class="curser" @click="beianClick">皖ICP备2023001194号</span>
     </div>
   </div>
 </template>
