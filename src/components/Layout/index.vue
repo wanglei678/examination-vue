@@ -32,8 +32,8 @@
         </div>
       </el-scrollbar>
       <div class="footer">
-        <span>±ё°ёєЕЈє</span>
-        <span class="curser" @click="beianClick">НоICP±ё2023001194єЕ</span>
+        <span>е¤‡жЎ€еЏ·пјљ</span>
+        <span class="curser" @click="beianClick">зљ–ICPе¤‡2023001194еЏ·</span>
       </div>
     </main>
   </div>
