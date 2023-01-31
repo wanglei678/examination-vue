@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import { showError, showSuccess } from '@/utils/message';
   import { onMounted, ref } from 'vue';
+  // 测试随机真题模拟及密卷
+  // import { queryUserLists, getTrueTopicsRandomly, getSimulationRandomly, getDenseVolumeRandomly } from '@api/userList';
   import { queryUserLists } from '@api/userList';
   import { deleteUser } from '@api/deleteUser';
   import { addUsers } from '@api/addUser';
@@ -33,11 +35,16 @@
   const managerFormOptions: any = ref([]);
   const editPwdFormOptions: any = ref([]);
   const formEl = ref();
+  const phoneNum = ref();
   const editPwdFormEl = ref();
   const formElManager = ref();
   onMounted(() => {
     window.document.title = '用户管理';
     getTableData();
+    // 测试随机真题模拟及密卷
+    // getTrueTopicsRandomly({grade: '1'})
+    // getSimulationRandomly({grade: '1'})
+    // getDenseVolumeRandomly({grade: '1'})
   });
   const formatDate = (times: any) => {
     let time: any =Date.parse(times)
@@ -54,6 +61,7 @@
     loading.value = true;
     let params: any = {
       userName: userName.value,
+      phone: phoneNum.value,
       pageIndex: currentPage.value - 1,
       pageSize: pageSize.value
     }
@@ -186,6 +194,12 @@
             class="pile-num"
             placeholder="请输入用户名"
             v-model.trim="userName"
+            clearable
+          ></el-input>
+          <el-input
+            class="pile-num"
+            placeholder="请输入手机号"
+            v-model.trim="phoneNum"
             clearable
           ></el-input>
           <el-button @click="selectTableData()" type="primary">查询</el-button>
