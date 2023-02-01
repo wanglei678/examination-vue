@@ -2,7 +2,7 @@
   import { showError, showSuccess } from '@/utils/message';
   import { onMounted, ref } from 'vue';
   // 测试随机真题模拟及密卷
-  // import { queryUserLists, getTrueTopicsRandomly, getSimulationRandomly, getDenseVolumeRandomly } from '@api/userList';
+  // import { queryUserLists, getTrueTopicsRandomly, getSimulationRandomly, getDenseVolumeRandomly, addExamRecord, queryExamRecord } from '@api/userList';
   import { queryUserLists } from '@api/userList';
   import { deleteUser } from '@api/deleteUser';
   import { addUsers } from '@api/addUser';
@@ -45,6 +45,17 @@
     // getTrueTopicsRandomly({grade: '1'})
     // getSimulationRandomly({grade: '1'})
     // getDenseVolumeRandomly({grade: '1'})
+    // addExamRecord({
+    //   userId: 1,
+    //   grade: 1,
+    //   examType: 1,
+    //   score: 99
+    // })
+    // queryExamRecord({
+    //   userId: 1,
+    //   grade: 1,
+    //   examType: 1
+    // })
   });
   const formatDate = (times: any) => {
     let time: any =Date.parse(times)

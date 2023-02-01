@@ -18,3 +18,13 @@ export const getSimulationRandomly = (
 export const getDenseVolumeRandomly = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/getDenseVolumeRandomly', params);
+
+// 获取考试历史
+export const queryExamRecord = (
+  params: any
+): Promise<API.ResponseData<any>> => post('/queryExamRecord', params);
+
+// 新增考试历史数据
+export const addExamRecord = (
+  params: any
+): Promise<API.ResponseData<any>> => post('/addExamRecord', params);
