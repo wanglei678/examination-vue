@@ -1,10 +1,19 @@
-<script setup lang='ts'>
+<script setup lang="ts">
   import { showError, showSuccess } from '@/utils/message';
   import { watch, onMounted, ref, inject, Ref } from 'vue';
   import Dialog from '@components/Dialog/index.vue';
   import Form from '@components/Form/index.vue';
   import { ThemeEnum, themeMap } from '@utils/enum';
-  import { querychaptersList, addChapter, queryChapterQuestions, editQuestion, addQuestions, delQuestion, editChapterName, deleteChapterAndQuestion } from '@api/chapters';
+  import {
+    querychaptersList,
+    addChapter,
+    queryChapterQuestions,
+    editQuestion,
+    addQuestions,
+    delQuestion,
+    editChapterName,
+    deleteChapterAndQuestion
+  } from '@api/chapters';
   import * as XLSX from 'xlsx';
   import moment from 'moment';
   import { export_json_to_excel } from '@/utils/export2Excel';
@@ -41,7 +50,7 @@
   const fileList = ref();
   const fileData = ref();
   const fileDataList: any = ref([]);
-  const getEditQuestionFormOptions = ( values: any ) => {
+  const getEditQuestionFormOptions = (values: any) => {
     return [
       {
         label: '题目名称',
@@ -87,10 +96,10 @@
       rules: [{ required: true, message: '请输入章节名称', trigger: 'blur' }],
       placeholder: '请输入章节名称'
     }
-  ]
+  ];
   const props = defineProps({
     grade: String
-  })
+  });
   onMounted(() => {
     window.document.title = '章节';
     init();
@@ -104,45 +113,50 @@
   );
   const init = () => {
     loading.value = true;
-    let params: any = {}
-    if(props.grade == 'questionsEasy') {
+    let params: any = {};
+    if (props.grade == 'questionsEasy') {
       params.grade = '1';
     } else if (props.grade == 'questionsMiddle') {
       params.grade = '2';
     } else params.grade = '3';
-    querychaptersList(params).then(res => {
-      chapterList.value = res.data;
-      chapterList.value.map((item: any) => {
-        item.chapterName = item.name;
-        item.type = 'success';
+    querychaptersList(params)
+      .then((res) => {
+        chapterList.value = res.data;
+        chapterList.value.map((item: any) => {
+          item.chapterName = item.name;
+          item.type = 'success';
+        });
+        loading.value = false;
       })
-      loading.value = false;
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const sureAddQuestion = () => {
     addQuestionDiaVisval.value = false;
     fileDataList.value.map((item: any) => {
-      item.zjid = tagClickData.value.id
-    })
-    addQuestions(fileDataList.value).then(res => {
-      showSuccess('批量导入题目成功');
-      loading.value = false;
-      tagClick(tagClickData.value);
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+      item.zjid = tagClickData.value.id;
+    });
+    console.log('dddddd', fileDataList.value);
+    addQuestions(fileDataList.value)
+      .then((res) => {
+        showSuccess('批量导入题目成功');
+        loading.value = false;
+        tagClick(tagClickData.value);
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const sureAddChapter = () => {
     formEl.value.validate(async (valid: boolean, values: any) => {
       if (valid) {
         let params: any = {
           name: values.chapterName
-        }
-        if(props.grade == 'questionsEasy') {
+        };
+        if (props.grade == 'questionsEasy') {
           params.grade = '1';
         } else if (props.grade == 'questionsMiddle') {
           params.grade = '2';
@@ -152,36 +166,40 @@
         tableShow.value = false;
         if (!editChapterFlag.value) {
           // 新增章节
-          addChapter(params).then(() => {
-            showSuccess('新增章节成功');
-            loading.value = false;
-            init();
-          }).catch(error => {
-            loading.value = false;
-            showError(error);
-          })
+          addChapter(params)
+            .then(() => {
+              showSuccess('新增章节成功');
+              loading.value = false;
+              init();
+            })
+            .catch((error) => {
+              loading.value = false;
+              showError(error);
+            });
         } else {
           // 修改章节名称
           let editParams: any = {
             name: values.chapterName,
             id: editOrDeleteChapterData.value.id
-          }
-          editChapterName(editParams).then(() => {
-            showSuccess('编辑章节名称成功');
-            loading.value = false;
-            init();
-          }).catch((error: any) => {
-            loading.value = false;
-            showError(error);
-          })
+          };
+          editChapterName(editParams)
+            .then(() => {
+              showSuccess('编辑章节名称成功');
+              loading.value = false;
+              init();
+            })
+            .catch((error: any) => {
+              loading.value = false;
+              showError(error);
+            });
         }
       }
-    })
-  }
+    });
+  };
   const changeFile = (file: any) => {
     fileData.value = file; // 保存当前选择文件
     readExcel(); // 调用读取数据的方法
-  }
+  };
   const readExcel = (e?: any) => {
     const files = fileData.value;
     if (!files) {
@@ -203,48 +221,62 @@
         const ws = XLSX.utils.sheet_to_json(workbook.Sheets[wsname]); // 生成json表格内容
         fileDataList.value = [];
         ws.map((item: any) => {
-          fileDataList.value.push({
+          let obj = {
             title: item['题目'],
             option: item['选项'],
             answer: item['答案'] + '',
             type: item['类型'],
             analysis: item['解析']
-          })
-        })
+          };
+          const arr = obj.option
+            .replace('A.', '')
+            .replace('B.', '')
+            .replace('C.', '')
+            .replace('D.', '')
+            .replace('E.', '')
+            .replace('F.', '')
+            .replace('A', '')
+            .replace('B', '')
+            .split('***');
+          obj.option = JSON.stringify(arr);
+          fileDataList.value.push(obj);
+        });
       } catch (e) {
         return false;
       }
     };
     // 如果为原生 input 则应是 files[0]
     fileReader.readAsBinaryString(files.raw);
-  }
+  };
   const cancelUploadDia = () => {
     fileDataList.value = [];
     fileList.value = [];
     addQuestionDiaVisval.value = false;
-  }
+  };
   const handleExceed = () => {
     showError(`当前限制选择 1 个文件！`);
-  }
+  };
   const deleteQuestion = (row: any) => {
     loading.value = true;
     let params: any = {
       tmid: row.tmid
-    }
-    delQuestion(params).then(res => {
-      showSuccess('删除题目成功');
-      loading.value = false;
-      tagClick(tagClickData.value);
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    };
+    delQuestion(params)
+      .then((res) => {
+        showSuccess('删除题目成功');
+        loading.value = false;
+        tagClick(tagClickData.value);
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const editQuesBtn = (row: any) => {
     editRowData.value = row;
     editQuestionFormOptions.value = getEditQuestionFormOptions(row);
     editQuestionVisible.value = true;
-  }
+  };
   const editQuestionConfirm = () => {
     editQuestionFormEl.value.validate(async (valid: boolean, values: any) => {
       if (valid) {
@@ -255,20 +287,22 @@
           options: values.options,
           title: values.title,
           type: values.type
-        }
+        };
         editQuestionVisible.value = false;
         loading.value = true;
-        editQuestion(params).then(res => {
-          showSuccess('编辑题目成功');
-          loading.value = false;
-          tagClick(tagClickData.value);
-        }).catch(error => {
-          loading.value = false;
-          showError(error);
-        })
+        editQuestion(params)
+          .then((res) => {
+            showSuccess('编辑题目成功');
+            loading.value = false;
+            tagClick(tagClickData.value);
+          })
+          .catch((error) => {
+            loading.value = false;
+            showError(error);
+          });
       }
-    })
-  }
+    });
+  };
   const tagClick = (item: any) => {
     tagClickData.value = item;
     loading.value = true;
@@ -278,22 +312,24 @@
       } else {
         jtem.type = 'success';
       }
-    })
-    let params: any = {zjid: item.id}
-    queryChapterQuestions(params).then(res => {
-      questionList.value = res.data || [];
-      tableShow.value = true;
-      loading.value = false;
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    });
+    let params: any = { zjid: item.id };
+    queryChapterQuestions(params)
+      .then((res) => {
+        questionList.value = res.data || [];
+        tableShow.value = true;
+        loading.value = false;
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const uploadBtn = () => {
     fileDataList.value = [];
     fileList.value = [];
     addQuestionDiaVisval.value = true;
-  }
+  };
   const dropdownClick = (val: any) => {
     const { type, command } = val;
     editOrDeleteChapterData.value = command;
@@ -304,18 +340,18 @@
     } else if (type === 'delete') {
       deleteChapterVisible.value = true;
     }
-  }
+  };
   const commandValue = (type: any, command: any) => {
     return {
-      'type': type,
-      'command': command
-    }
-  }
+      type: type,
+      command: command
+    };
+  };
   const addChapterClick = () => {
     editChapterFlag.value = false;
     getFormOptions[0].defaultValue = '';
     addChapterDiaVisval.value = true;
-  }
+  };
   const deleteChapterConfirm = () => {
     loading.value = true;
     tableShow.value = false;
@@ -323,15 +359,17 @@
     let params: any = {
       id: editOrDeleteChapterData.value.id
     };
-    deleteChapterAndQuestion(params).then(() => {
-      showSuccess('删除章节成功');
-      loading.value = false;
-      init();
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    deleteChapterAndQuestion(params)
+      .then(() => {
+        showSuccess('删除章节成功');
+        loading.value = false;
+        init();
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
 </script>
 <template>
   <div v-loading="loading">
@@ -341,12 +379,14 @@
         <div v-for="item in chapterList" :key="item" class="tag-position">
           <el-dropdown @command="dropdownClick">
             <span class="el-dropdown-link">
-              <el-tag @click="tagClick(item)" :type='item.type'>{{ item.chapterName }}</el-tag>
+              <el-tag @click="tagClick(item)" :type="item.type">{{ item.chapterName }}</el-tag>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item :command="commandValue('edit', item)">修改章节</el-dropdown-item>
-                <el-dropdown-item :command="commandValue('delete', item)">删除章节</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('delete', item)"
+                  >删除章节</el-dropdown-item
+                >
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -361,7 +401,8 @@
         stripe
         :header-row-class-name="themeMap[theme || 'default'].className"
         border
-        align="center">
+        align="center"
+      >
         <el-table-column prop="title" label="题目名称" align="center">
           <template v-slot="scope">
             <span v-html="scope.row.title"></span>
@@ -396,14 +437,16 @@
     <Dialog
       :title="editChapterFlag ? '编辑章节' : '新增章节'"
       v-model:dialogVisible="addChapterDiaVisval"
-      @confirm="sureAddChapter">
+      @confirm="sureAddChapter"
+    >
       <Form :options="getFormOptions" ref="formEl" />
     </Dialog>
     <el-dialog
       title="批量导入题目"
       width="1100px"
       :destroy-on-close="true"
-      :model-value="addQuestionDiaVisval">
+      :model-value="addQuestionDiaVisval"
+    >
       <el-card class="box-card">
         <el-upload
           class="upload-demo"
@@ -412,7 +455,8 @@
           :file-list="fileList"
           :auto-upload="false"
           :on-exceed="handleExceed"
-          :on-change="changeFile">
+          :on-change="changeFile"
+        >
           <el-button size="small" type="primary">点击上传文件</el-button>
           <template #tip>
             <div class="el-upload__tip">只能上传 xlsx,xls 文件</div>
@@ -426,7 +470,8 @@
           stripe
           :header-row-class-name="themeMap[theme || 'default'].className"
           border
-          align="center">
+          align="center"
+        >
           <el-table-column prop="title" label="题目名称" align="center"></el-table-column>
           <el-table-column prop="type" label="题目类型" align="center"></el-table-column>
           <el-table-column prop="option" label="题目内容" align="center"></el-table-column>
@@ -444,13 +489,15 @@
     <Dialog
       title="编辑题目"
       v-model:dialogVisible="editQuestionVisible"
-      @confirm="editQuestionConfirm">
+      @confirm="editQuestionConfirm"
+    >
       <Form :options="editQuestionFormOptions" ref="editQuestionFormEl" />
     </Dialog>
     <Dialog
       title="删除章节"
       v-model:dialogVisible="deleteChapterVisible"
-      @confirm="deleteChapterConfirm">
+      @confirm="deleteChapterConfirm"
+    >
       <span>是否确定删除章节,这将会同时删除该章节下的所有题目！</span>
     </Dialog>
   </div>
