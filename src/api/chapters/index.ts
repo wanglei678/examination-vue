@@ -23,6 +23,10 @@ export const deleteChapterAndQuestion = (
 export const queryChapterQuestions = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/queryChapterQuestions', params);
+// 获取章节下的基础知识题目
+export const queryBaseQuestions = (
+  params: any
+): Promise<API.ResponseData<any>> => post('/queryBaseQuestions', params);
 
 // 编辑单个题目
 export const editQuestion = (
@@ -38,3 +42,7 @@ export const delQuestion = (
 export const addQuestions = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/addQuestions', params);
+// 批量导入基础题目
+export const addBaseQuestions = (
+  params: any
+): Promise<API.ResponseData<any>> => post('/addBaseChapterQuestions', params);

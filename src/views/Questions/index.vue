@@ -25,6 +25,7 @@
       trueTopicShow.value = false;
       simulationShow.value = false;
       denseVolumeShow.value = false;
+      console.log("ddddddd",grade.value)
     },
     { immediate: true }
   )
@@ -61,13 +62,13 @@
       <el-tab-pane label="章节" name="chapters">
         <Chapter ref="RefChapter" :grade="grade" v-if="chapterShow"></Chapter>
       </el-tab-pane>
-      <el-tab-pane label="真题" name="trueTopics">
+      <el-tab-pane label="真题" v-if="grade!='base'" name="trueTopics">
         <TrueTopic :grade="grade" v-if="trueTopicShow"></TrueTopic>
       </el-tab-pane>
-      <el-tab-pane label="模拟" name="simulations">
+      <el-tab-pane label="模拟" v-if="grade!='base'" name="simulations">
         <Simulation :grade="grade" v-if="simulationShow"></Simulation>
       </el-tab-pane>
-      <el-tab-pane label="密卷" name="denseVolumes">
+      <el-tab-pane label="密卷" v-if="grade!='base'" name="denseVolumes">
         <DenseVolume :grade="grade" v-if="denseVolumeShow"></DenseVolume>
       </el-tab-pane>
     </el-tabs>

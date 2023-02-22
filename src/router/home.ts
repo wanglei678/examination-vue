@@ -40,7 +40,12 @@ const homeRouter: Array<RouteRecordRaw> = [
     path: '/middleMaintenanceOperate',
     name: 'middleMaintenanceOperate',
     component: () => import('@views/Operare/MiddleMaintenanceOperate/index.vue')
-  }
+  },
+  {
+    path: '/base',
+    name: 'base',
+    component: () => import('@views/Questions/index.vue')
+  },
 ];
 
 export default homeRouter;

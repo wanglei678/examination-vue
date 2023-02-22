@@ -12,7 +12,9 @@
     addQuestions,
     delQuestion,
     editChapterName,
-    deleteChapterAndQuestion
+    deleteChapterAndQuestion,
+    queryBaseQuestions,
+    addBaseQuestions
   } from '@api/chapters';
   import * as XLSX from 'xlsx';
   import moment from 'moment';
@@ -31,6 +33,7 @@
     ElIcon,
     ElTag
   } from 'element-plus';
+  import { getDatd } from './mock';
   const theme = inject<Ref<keyof typeof ThemeEnum>>('theme');
   const editQuestionFormOptions = ref();
   const tagClickData: any = ref();
@@ -118,7 +121,10 @@
       params.grade = '1';
     } else if (props.grade == 'questionsMiddle') {
       params.grade = '2';
+    } else if (props.grade == 'base') {
+      params.grade = '0';
     } else params.grade = '3';
+    console.log('dddddd params', params);
     querychaptersList(params)
       .then((res) => {
         chapterList.value = res.data;
@@ -138,17 +144,30 @@
     fileDataList.value.map((item: any) => {
       item.zjid = tagClickData.value.id;
     });
-    console.log('dddddd', fileDataList.value);
-    addQuestions(fileDataList.value)
-      .then((res) => {
-        showSuccess('批量导入题目成功');
-        loading.value = false;
-        tagClick(tagClickData.value);
-      })
-      .catch((error) => {
-        loading.value = false;
-        showError(error);
-      });
+
+    if (props.grade == 'base') {
+      addBaseQuestions(fileDataList.value)
+        .then((res) => {
+          showSuccess('批量导入题目成功');
+          loading.value = false;
+          tagClick(tagClickData.value);
+        })
+        .catch((error) => {
+          loading.value = false;
+          showError(error);
+        });
+    } else {
+      addQuestions(fileDataList.value)
+        .then((res) => {
+          showSuccess('批量导入题目成功');
+          loading.value = false;
+          tagClick(tagClickData.value);
+        })
+        .catch((error) => {
+          loading.value = false;
+          showError(error);
+        });
+    }
   };
   const sureAddChapter = () => {
     formEl.value.validate(async (valid: boolean, values: any) => {
@@ -160,6 +179,8 @@
           params.grade = '1';
         } else if (props.grade == 'questionsMiddle') {
           params.grade = '2';
+        } else if (props.grade == 'base') {
+          params.grade = '0';
         } else params.grade = '3';
         addChapterDiaVisval.value = false;
         loading.value = true;
@@ -314,16 +335,29 @@
       }
     });
     let params: any = { zjid: item.id };
-    queryChapterQuestions(params)
-      .then((res) => {
-        questionList.value = res.data || [];
-        tableShow.value = true;
-        loading.value = false;
-      })
-      .catch((error) => {
-        loading.value = false;
-        showError(error);
-      });
+    if (props.grade == 'base') {
+      queryBaseQuestions(params)
+        .then((res) => {
+          questionList.value = res.data || [];
+          tableShow.value = true;
+          loading.value = false;
+        })
+        .catch((error) => {
+          loading.value = false;
+          showError(error);
+        });
+    } else {
+      queryChapterQuestions(params)
+        .then((res) => {
+          questionList.value = res.data || [];
+          tableShow.value = true;
+          loading.value = false;
+        })
+        .catch((error) => {
+          loading.value = false;
+          showError(error);
+        });
+    }
   };
   const uploadBtn = () => {
     fileDataList.value = [];
@@ -370,10 +404,24 @@
         showError(error);
       });
   };
+  const addChapterQues = () => {
+    const data = getDatd();
+    console.log('addChapterQues', data);
+    addQuestions(data)
+      .then((res) => {
+        showSuccess('批量导入题目成功');
+        loading.value = false;
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
 </script>
 <template>
   <div v-loading="loading">
     <el-button @click="addChapterClick" class="mb-10" type="primary">新增章节</el-button>
+    <!-- <el-button @click="addChapterQues" class="mb-10" type="primary">上传章节题目</el-button> -->
     <el-card class="box-card">
       <div class="tags-flex">
         <div v-for="item in chapterList" :key="item" class="tag-position">

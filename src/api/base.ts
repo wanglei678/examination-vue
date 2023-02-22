@@ -17,6 +17,11 @@ export const getMenus = () => {
       id: 3,
       children: [
         {
+          code: 'base',
+          displayName: '基础知识',
+          id: 11
+        },
+        {
           code: 'questionsEasy',
           displayName: '初级题库',
           id: 4
