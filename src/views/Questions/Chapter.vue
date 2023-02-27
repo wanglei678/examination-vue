@@ -33,7 +33,6 @@
     ElIcon,
     ElTag
   } from 'element-plus';
-  import { getDatd } from './mock';
   const theme = inject<Ref<keyof typeof ThemeEnum>>('theme');
   const editQuestionFormOptions = ref();
   const tagClickData: any = ref();
@@ -124,7 +123,6 @@
     } else if (props.grade == 'base') {
       params.grade = '0';
     } else params.grade = '3';
-    console.log('dddddd params', params);
     querychaptersList(params)
       .then((res) => {
         chapterList.value = res.data;
@@ -404,24 +402,10 @@
         showError(error);
       });
   };
-  const addChapterQues = () => {
-    const data = getDatd();
-    console.log('addChapterQues', data);
-    addQuestions(data)
-      .then((res) => {
-        showSuccess('批量导入题目成功');
-        loading.value = false;
-      })
-      .catch((error) => {
-        loading.value = false;
-        showError(error);
-      });
-  };
 </script>
 <template>
   <div v-loading="loading">
     <el-button @click="addChapterClick" class="mb-10" type="primary">新增章节</el-button>
-    <!-- <el-button @click="addChapterQues" class="mb-10" type="primary">上传章节题目</el-button> -->
     <el-card class="box-card">
       <div class="tags-flex">
         <div v-for="item in chapterList" :key="item" class="tag-position">

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { ElForm, ElFormItem, ElInput, ElButton } from 'element-plus';
+  import { ElForm, ElFormItem, ElInput, ElButton, ElIcon } from 'element-plus';
   import { useRouter } from 'vue-router';
-  import { login } from '@api/login';
+  import { login, sendMail } from '@api/login';
   import { showError, showSuccess } from '@/utils/message';
   import { onMounted } from 'vue';
   onMounted(() => {
@@ -21,6 +21,13 @@
   };
   const beianClick = () => {
     window.open('https://beian.miit.gov.cn/','_blank');
+  }
+  const sendMails = () => {
+    sendMail().then(res => {
+      showSuccess('邮件发送成功');
+    }).catch(error =>{
+      showError(error)
+    })
   }
   const logins = () => {
     ruleForms.value.validate((valid: boolean) => {
@@ -52,6 +59,9 @@
 
 <template>
   <div class="login" v-loading="loading">
+    <div>
+      <el-icon @click="sendMails" class="is-loading el-icon-eleme"></el-icon>
+    </div>
     <div class="login-container">
       <span class="login-logo-title">后台管理系统</span>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForms">
