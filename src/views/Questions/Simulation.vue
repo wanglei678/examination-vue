@@ -91,17 +91,17 @@
   };
   let getFormOptions: any = [
     {
-      label: '模拟名称',
+      label: '密卷名称',
       prop: 'trueTopicName',
-      rules: [{ required: true, message: '请输入模拟名称', trigger: 'blur' }],
-      placeholder: '请输入模拟名称'
+      rules: [{ required: true, message: '请输入密卷名称', trigger: 'blur' }],
+      placeholder: '请输入密卷名称'
     }
   ]
   const props = defineProps({
     grade: String
   })
   onMounted(() => {
-    window.document.title = '模拟';
+    window.document.title = '密卷';
     init();
   });
   watch(
@@ -160,9 +160,9 @@
         loading.value = true;
         tableShow.value = false;
         if (!edittrueTopicFlag.value) {
-          // 新增模拟
+          // 新增密卷
           addSimulation(params).then(() => {
-            showSuccess('新增模拟成功');
+            showSuccess('新增密卷成功');
             loading.value = false;
             init();
           }).catch(error => {
@@ -170,13 +170,13 @@
             showError(error);
           })
         } else {
-          // 修改模拟名称
+          // 修改密卷名称
           let editParams: any = {
             name: values.trueTopicName,
             id: editOrDeletetrueTopicData.value.id
           }
           editSimulationName(editParams).then(() => {
-            showSuccess('编辑模拟名称成功');
+            showSuccess('编辑密卷名称成功');
             loading.value = false;
             init();
           }).catch((error: any) => {
@@ -212,13 +212,28 @@
         const ws = XLSX.utils.sheet_to_json(workbook.Sheets[wsname]); // 生成json表格内容
         fileDataList.value = [];
         ws.map((item: any) => {
-          fileDataList.value.push({
+          let obj = {
             title: item['题目'],
             option: item['选项'],
             answer: item['答案'] + '',
             type: item['类型'],
             analysis: item['解析']
-          })
+          };
+          const arr = obj.option
+            .replace('A.', '')
+            .replace('B.', '')
+            .replace('C.', '')
+            .replace('D.', '')
+            .replace('E.', '')
+            .replace('F.', '')
+            .replace('A．', '')
+            .replace('B．', '')
+            .replace('C．', '')
+            .replace('D．', '')
+            .replace('E．', '')
+            .split('***');
+          obj.option = JSON.stringify(arr);
+          fileDataList.value.push(obj);
         })
       } catch (e) {
         return false;
@@ -333,7 +348,7 @@
       id: editOrDeletetrueTopicData.value.id
     };
     deleteSimulationsAndQuestion(params).then(() => {
-      showSuccess('删除模拟成功');
+      showSuccess('删除密卷成功');
       loading.value = false;
       init();
     }).catch(error => {
@@ -344,7 +359,7 @@
 </script>
 <template>
   <div v-loading="loading">
-    <el-button @click="addtrueTopicClick" class="mb-10" type="primary">新增模拟</el-button>
+    <el-button @click="addtrueTopicClick" class="mb-10" type="primary">新增密卷</el-button>
     <el-card class="box-card">
       <div class="tags-flex">
         <div v-for="item in trueTopicList" :key="item" class="tag-position">
@@ -354,8 +369,8 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item :command="commandValue('edit', item)">修改模拟</el-dropdown-item>
-                <el-dropdown-item :command="commandValue('delete', item)">删除模拟</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('edit', item)">修改密卷</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('delete', item)">删除密卷</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -403,7 +418,7 @@
       </el-table>
     </el-card>
     <Dialog
-      :title="edittrueTopicFlag ? '编辑模拟' : '新增模拟'"
+      :title="edittrueTopicFlag ? '编辑密卷' : '新增密卷'"
       v-model:dialogVisible="addtrueTopicDiaVisval"
       @confirm="sureAddtrueTopic">
       <Form :options="getFormOptions" ref="formEl" />
@@ -457,10 +472,10 @@
       <Form :options="editQuestionFormOptions" ref="editQuestionFormEl" />
     </Dialog>
     <Dialog
-      title="删除模拟"
+      title="删除密卷"
       v-model:dialogVisible="deletetrueTopicVisible"
       @confirm="deletetrueTopicConfirm">
-      <span>是否确定删除模拟,这将会同时删除该模拟下的所有题目！</span>
+      <span>是否确定删除密卷,这将会同时删除该密卷下的所有题目！</span>
     </Dialog>
   </div>
 </template>

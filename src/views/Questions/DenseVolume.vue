@@ -1,4 +1,4 @@
-<script setup lang='ts'>
+<script setup lang="ts">
   import { showError, showSuccess } from '@/utils/message';
   import { watch, onMounted, ref, inject, Ref } from 'vue';
   import Dialog from '@components/Dialog/index.vue';
@@ -14,6 +14,7 @@
     deleteDenseVolumesAndQuestion,
     addDenseVolumesQuestions
   } from '@api/denseVolume';
+  import { getDenseVolumeRandomly } from '@api/userList';
   import * as XLSX from 'xlsx';
   import moment from 'moment';
   import { export_json_to_excel } from '@/utils/export2Excel';
@@ -50,7 +51,7 @@
   const fileList = ref();
   const fileData = ref();
   const fileDataList: any = ref([]);
-  const getEditQuestionFormOptions = ( values: any ) => {
+  const getEditQuestionFormOptions = (values: any) => {
     return [
       {
         label: '题目名称',
@@ -91,17 +92,17 @@
   };
   let getFormOptions: any = [
     {
-      label: '密卷名称',
+      label: '模拟名称',
       prop: 'trueTopicName',
-      rules: [{ required: true, message: '请输入密卷名称', trigger: 'blur' }],
-      placeholder: '请输入密卷名称'
+      rules: [{ required: true, message: '请输入模拟名称', trigger: 'blur' }],
+      placeholder: '请输入模拟名称'
     }
-  ]
+  ];
   const props = defineProps({
     grade: String
-  })
+  });
   onMounted(() => {
-    window.document.title = '密卷';
+    window.document.title = '模拟';
     init();
   });
   watch(
@@ -113,45 +114,49 @@
   );
   const init = () => {
     loading.value = true;
-    let params: any = {}
-    if(props.grade == 'questionsEasy') {
+    let params: any = {};
+    if (props.grade == 'questionsEasy') {
       params.grade = '1';
     } else if (props.grade == 'questionsMiddle') {
       params.grade = '2';
     } else params.grade = '3';
-    denseVolumeList(params).then(res => {
-      trueTopicList.value = res.data;
-      trueTopicList.value.map((item: any) => {
-        item.trueTopicName = item.name;
-        item.type = 'success';
+    denseVolumeList(params)
+      .then((res) => {
+        trueTopicList.value = res.data;
+        trueTopicList.value.map((item: any) => {
+          item.trueTopicName = item.name;
+          item.type = 'success';
+        });
+        loading.value = false;
       })
-      loading.value = false;
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const sureAddQuestion = () => {
     addQuestionDiaVisval.value = false;
     fileDataList.value.map((item: any) => {
-      item.mjid = tagClickData.value.id
-    })
-    addDenseVolumesQuestions(fileDataList.value).then(res => {
-      showSuccess('批量导入题目成功');
-      loading.value = false;
-      tagClick(tagClickData.value);
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+      item.mjid = tagClickData.value.id;
+    });
+    addDenseVolumesQuestions(fileDataList.value)
+      .then((res) => {
+        showSuccess('批量导入题目成功');
+        loading.value = false;
+        tagClick(tagClickData.value);
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const sureAddtrueTopic = () => {
     formEl.value.validate(async (valid: boolean, values: any) => {
       if (valid) {
         let params: any = {
           name: values.trueTopicName
-        }
-        if(props.grade == 'questionsEasy') {
+        };
+        if (props.grade == 'questionsEasy') {
           params.grade = '1';
         } else if (props.grade == 'questionsMiddle') {
           params.grade = '2';
@@ -160,37 +165,41 @@
         loading.value = true;
         tableShow.value = false;
         if (!edittrueTopicFlag.value) {
-          // 新增密卷
-          addDenseVolume(params).then(() => {
-            showSuccess('新增密卷成功');
-            loading.value = false;
-            init();
-          }).catch(error => {
-            loading.value = false;
-            showError(error);
-          })
+          // 新增模拟
+          addDenseVolume(params)
+            .then(() => {
+              showSuccess('新增模拟成功');
+              loading.value = false;
+              init();
+            })
+            .catch((error) => {
+              loading.value = false;
+              showError(error);
+            });
         } else {
-          // 修改密卷名称
+          // 修改模拟名称
           let editParams: any = {
             name: values.trueTopicName,
             id: editOrDeletetrueTopicData.value.id
-          }
-          editDenseVolumeName(editParams).then(() => {
-            showSuccess('编辑密卷名称成功');
-            loading.value = false;
-            init();
-          }).catch((error: any) => {
-            loading.value = false;
-            showError(error);
-          })
+          };
+          editDenseVolumeName(editParams)
+            .then(() => {
+              showSuccess('编辑模拟名称成功');
+              loading.value = false;
+              init();
+            })
+            .catch((error: any) => {
+              loading.value = false;
+              showError(error);
+            });
         }
       }
-    })
-  }
+    });
+  };
   const changeFile = (file: any) => {
     fileData.value = file; // 保存当前选择文件
     readExcel(); // 调用读取数据的方法
-  }
+  };
   const readExcel = (e?: any) => {
     const files = fileData.value;
     if (!files) {
@@ -218,42 +227,44 @@
             answer: item['答案'] + '',
             type: item['类型'],
             analysis: item['解析']
-          })
-        })
+          });
+        });
       } catch (e) {
         return false;
       }
     };
     // 如果为原生 input 则应是 files[0]
     fileReader.readAsBinaryString(files.raw);
-  }
+  };
   const cancelUploadDia = () => {
     fileDataList.value = [];
     fileList.value = [];
     addQuestionDiaVisval.value = false;
-  }
+  };
   const handleExceed = () => {
     showError(`当前限制选择 1 个文件！`);
-  }
+  };
   const deleteQuestion = (row: any) => {
     loading.value = true;
     let params: any = {
       tmid: row.tmid
-    }
-    deleteDenseVolumesQuestion(params).then(res => {
-      showSuccess('删除题目成功');
-      loading.value = false;
-      tagClick(tagClickData.value);
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    };
+    deleteDenseVolumesQuestion(params)
+      .then((res) => {
+        showSuccess('删除题目成功');
+        loading.value = false;
+        tagClick(tagClickData.value);
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const editQuesBtn = (row: any) => {
     editRowData.value = row;
     editQuestionFormOptions.value = getEditQuestionFormOptions(row);
     editQuestionVisible.value = true;
-  }
+  };
   const editQuestionConfirm = () => {
     editQuestionFormEl.value.validate(async (valid: boolean, values: any) => {
       if (valid) {
@@ -264,20 +275,22 @@
           options: values.options,
           title: values.title,
           type: values.type
-        }
+        };
         editQuestionVisible.value = false;
         loading.value = true;
-        editDenseVolumesQuestion(params).then(res => {
-          showSuccess('编辑题目成功');
-          loading.value = false;
-          tagClick(tagClickData.value);
-        }).catch(error => {
-          loading.value = false;
-          showError(error);
-        })
+        editDenseVolumesQuestion(params)
+          .then((res) => {
+            showSuccess('编辑题目成功');
+            loading.value = false;
+            tagClick(tagClickData.value);
+          })
+          .catch((error) => {
+            loading.value = false;
+            showError(error);
+          });
       }
-    })
-  }
+    });
+  };
   const tagClick = (item: any) => {
     tagClickData.value = item;
     loading.value = true;
@@ -287,22 +300,24 @@
       } else {
         jtem.type = 'success';
       }
-    })
-    let params: any = {mjid: item.id}
-    queryDenseVolumeQuestions(params).then(res => {
-      questionList.value = res.data || [];
-      tableShow.value = true;
-      loading.value = false;
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    });
+    let params: any = { mjid: item.id };
+    queryDenseVolumeQuestions(params)
+      .then((res) => {
+        questionList.value = res.data || [];
+        tableShow.value = true;
+        loading.value = false;
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
   const uploadBtn = () => {
     fileDataList.value = [];
     fileList.value = [];
     addQuestionDiaVisval.value = true;
-  }
+  };
   const dropdownClick = (val: any) => {
     const { type, command } = val;
     editOrDeletetrueTopicData.value = command;
@@ -313,18 +328,24 @@
     } else if (type === 'delete') {
       deletetrueTopicVisible.value = true;
     }
-  }
+  };
   const commandValue = (type: any, command: any) => {
     return {
-      'type': type,
-      'command': command
-    }
-  }
-  const addtrueTopicClick = () => {
-    edittrueTopicFlag.value = false;
-    getFormOptions[0].defaultValue = '';
-    addtrueTopicDiaVisval.value = true;
-  }
+      type: type,
+      command: command
+    };
+  };
+  const addtrueTopicClick = async () => {
+    let params: any = {};
+    if (props.grade == 'questionsEasy') {
+      params.grade = '1';
+    } else if (props.grade == 'questionsMiddle') {
+      params.grade = '2';
+    } else params.grade = '3';
+    console.log('ddddddddd', params);
+    const resp = await getDenseVolumeRandomly(params);
+    console.log('ddddddddd resp', resp);
+  };
   const deletetrueTopicConfirm = () => {
     loading.value = true;
     tableShow.value = false;
@@ -332,30 +353,34 @@
     let params: any = {
       id: editOrDeletetrueTopicData.value.id
     };
-    deleteDenseVolumesAndQuestion(params).then(() => {
-      showSuccess('删除密卷成功');
-      loading.value = false;
-      init();
-    }).catch(error => {
-      loading.value = false;
-      showError(error);
-    })
-  }
+    deleteDenseVolumesAndQuestion(params)
+      .then(() => {
+        showSuccess('删除模拟成功');
+        loading.value = false;
+        init();
+      })
+      .catch((error) => {
+        loading.value = false;
+        showError(error);
+      });
+  };
 </script>
 <template>
   <div v-loading="loading">
-    <el-button @click="addtrueTopicClick" class="mb-10" type="primary">新增密卷</el-button>
+    <el-button @click="addtrueTopicClick" class="mb-10" type="primary">随机模拟</el-button>
     <el-card class="box-card">
       <div class="tags-flex">
         <div v-for="item in trueTopicList" :key="item" class="tag-position">
           <el-dropdown @command="dropdownClick">
             <span class="el-dropdown-link">
-              <el-tag @click="tagClick(item)" :type='item.type'>{{ item.trueTopicName }}</el-tag>
+              <el-tag @click="tagClick(item)" :type="item.type">{{ item.trueTopicName }}</el-tag>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item :command="commandValue('edit', item)">修改密卷</el-dropdown-item>
-                <el-dropdown-item :command="commandValue('delete', item)">删除密卷</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('edit', item)">修改模拟</el-dropdown-item>
+                <el-dropdown-item :command="commandValue('delete', item)"
+                  >删除模拟</el-dropdown-item
+                >
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -370,7 +395,8 @@
         stripe
         :header-row-class-name="themeMap[theme || 'default'].className"
         border
-        align="center">
+        align="center"
+      >
         <el-table-column prop="title" label="题目名称" align="center">
           <template v-slot="scope">
             <span v-html="scope.row.title"></span>
@@ -403,16 +429,18 @@
       </el-table>
     </el-card>
     <Dialog
-      :title="edittrueTopicFlag ? '编辑密卷' : '新增密卷'"
+      :title="edittrueTopicFlag ? '编辑模拟' : '新增模拟'"
       v-model:dialogVisible="addtrueTopicDiaVisval"
-      @confirm="sureAddtrueTopic">
+      @confirm="sureAddtrueTopic"
+    >
       <Form :options="getFormOptions" ref="formEl" />
     </Dialog>
     <el-dialog
       title="批量导入题目"
       width="1100px"
       :destroy-on-close="true"
-      :model-value="addQuestionDiaVisval">
+      :model-value="addQuestionDiaVisval"
+    >
       <el-card class="box-card">
         <el-upload
           class="upload-demo"
@@ -421,7 +449,8 @@
           :file-list="fileList"
           :auto-upload="false"
           :on-exceed="handleExceed"
-          :on-change="changeFile">
+          :on-change="changeFile"
+        >
           <el-button size="small" type="primary">点击上传文件</el-button>
           <template #tip>
             <div class="el-upload__tip">只能上传 xlsx,xls 文件</div>
@@ -435,7 +464,8 @@
           stripe
           :header-row-class-name="themeMap[theme || 'default'].className"
           border
-          align="center">
+          align="center"
+        >
           <el-table-column prop="title" label="题目名称" align="center"></el-table-column>
           <el-table-column prop="type" label="题目类型" align="center"></el-table-column>
           <el-table-column prop="option" label="题目内容" align="center"></el-table-column>
@@ -453,14 +483,16 @@
     <Dialog
       title="编辑题目"
       v-model:dialogVisible="editQuestionVisible"
-      @confirm="editQuestionConfirm">
+      @confirm="editQuestionConfirm"
+    >
       <Form :options="editQuestionFormOptions" ref="editQuestionFormEl" />
     </Dialog>
     <Dialog
-      title="删除密卷"
+      title="删除模拟"
       v-model:dialogVisible="deletetrueTopicVisible"
-      @confirm="deletetrueTopicConfirm">
-      <span>是否确定删除密卷,这将会同时删除该密卷下的所有题目！</span>
+      @confirm="deletetrueTopicConfirm"
+    >
+      <span>是否确定删除模拟,这将会同时删除该模拟下的所有题目！</span>
     </Dialog>
   </div>
 </template>

@@ -42,13 +42,13 @@
       simulationShow.value = false;
       denseVolumeShow.value = false;
     }
-    if (tab.props.label === '模拟') {
+    if (tab.props.label === '密卷') {
       chapterShow.value = false;
       trueTopicShow.value = false;
       simulationShow.value = true;
       denseVolumeShow.value = false;
     }
-    if (tab.props.label === '密卷') {
+    if (tab.props.label === '模拟') {
       chapterShow.value = false;
       trueTopicShow.value = false;
       simulationShow.value = false;
@@ -65,10 +65,10 @@
       <el-tab-pane label="真题" v-if="grade!='base'" name="trueTopics">
         <TrueTopic :grade="grade" v-if="trueTopicShow"></TrueTopic>
       </el-tab-pane>
-      <el-tab-pane label="模拟" v-if="grade!='base'" name="simulations">
+      <el-tab-pane label="密卷" v-if="grade!='base'" name="simulations">
         <Simulation :grade="grade" v-if="simulationShow"></Simulation>
       </el-tab-pane>
-      <el-tab-pane label="密卷" v-if="grade!='base'" name="denseVolumes">
+      <el-tab-pane label="模拟" v-if="grade!='base'" name="denseVolumes">
         <DenseVolume :grade="grade" v-if="denseVolumeShow"></DenseVolume>
       </el-tab-pane>
     </el-tabs>

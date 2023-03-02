@@ -9,12 +9,12 @@ export const getTrueTopicsRandomly = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/getTrueTopicsRandomly', params);
 
-// 随机模拟
+// 随机密卷
 export const getSimulationRandomly = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/getSimulationRandomly', params);
 
-// 随机密卷
+// 随机模拟
 export const getDenseVolumeRandomly = (
   params: any
 ): Promise<API.ResponseData<any>> => post('/getDenseVolumeRandomly', params);
