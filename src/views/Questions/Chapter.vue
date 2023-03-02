@@ -478,6 +478,7 @@
       width="1100px"
       :destroy-on-close="true"
       :model-value="addQuestionDiaVisval"
+      @close="cancelUploadDia()"
     >
       <el-card class="box-card">
         <el-upload
